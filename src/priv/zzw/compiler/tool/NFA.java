@@ -23,7 +23,7 @@ public class NFA {
     //终态集
     private Set<Integer> finalStates = new HashSet<>();
 
-    private NFA(Symbol epsilon) {
+    NFA(Symbol epsilon) {
         this.EPSILON = epsilon;
     }
 
@@ -315,6 +315,47 @@ public class NFA {
             }
         }
         return getClosure(j);
+    }
+
+    /**
+     * NFA确定化为DFA
+     *
+     * @return DFA
+     */
+    public DFA determine() {
+        //
+        DFA dfa = new DFA();
+        int stateCount = 1;
+        ArrayList<Set<Integer>> subset = new ArrayList<>();
+
+        subset.add(null);
+        subset.add(1, getClosure(initialStates));
+        dfa.getNfa().initialStates.add(1);
+        dfa.getStates().add(1);
+        dfa.getAlphabets().addAll(alphabets);
+        dfa.getAlphabets().remove(EPSILON);
+
+        for (int i = 1; i <= stateCount; i++) {
+            for (Symbol alpha : dfa.getAlphabets()) {
+                Set<Integer> tar;
+                if (1 > (tar = getIa(subset.get(i), alpha)).size()) {
+                    continue;
+                }
+                if (!subset.contains(tar)) {
+                    subset.add(++stateCount, tar);
+                    dfa.getNfa().states.add(stateCount);
+                    //标记终态
+                    for (Integer f : finalStates) {
+                        if (tar.contains(f)) {
+                            dfa.getFinalStates().add(stateCount);
+                            break;
+                        }
+                    }
+                }
+                dfa.setF(i, alpha.getSymbol(), subset.indexOf(tar));
+            }
+        }
+        return dfa;
     }
 
 }
