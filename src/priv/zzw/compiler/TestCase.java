@@ -11,23 +11,23 @@ import java.util.*;
 
 public class TestCase {
 
-    private enum Identity {
-        VT, VN;
-    }
-
     public static void main(String[] args) {
+        //
         TestCase testCase = new TestCase();
 
-        testCase.testNFA();
+        testCase.testDFA();
     }
 
     public void testDFA() {
+        NFA nfa = NFA.loadNfaFromFile("nfa.txt");
         DFA dfa;
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        if (null == (dfa = DFA.loadFromFile("dfa.txt"))) {
+        if (null == nfa) {
             System.out.println("加载DFA失败");
         } else {
-            dfa.displayDFA(new PrintStream(baos), "Ø");
+            nfa.printNFA(System.out, "-1");
+            dfa = nfa.determine();
+            dfa.displayDFA(System.out, "-1");
             System.out.println(baos.toString());
             System.out.println("始态：" + dfa.getInitialState());
             List<String> list = new ArrayList<>();
@@ -35,6 +35,7 @@ public class TestCase {
                 list.add(i.toString());
             }
             System.out.println("终态：" + String.join(",", list));
+            System.out.println(dfa.serialize("nfa-to-dfa.txt"));
         }
     }
 
@@ -45,18 +46,6 @@ public class TestCase {
             nfa.printNFA(new PrintStream(baos), "Ø");
             System.out.println(baos.toString());
             //System.out.println(nfa.serializeNFA("nfa_copy.txt"));
-
-            DFA dfa = nfa.determine();
-            baos.reset();
-            dfa.displayDFA(new PrintStream(baos), "Ø");
-            System.out.println(baos.toString());
-            System.out.println("始态：" + dfa.getInitialState());
-            List<String> list = new ArrayList<>();
-            for (Integer i : dfa.getFinalStates()) {
-                list.add(i.toString());
-            }
-            System.out.println("终态：" + String.join(",", list));
-
             //calculate epsilon-closure
             Scanner s = new Scanner(System.in);
             PrintStream jout = System.out;
