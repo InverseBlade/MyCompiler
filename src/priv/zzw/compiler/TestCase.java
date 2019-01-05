@@ -15,7 +15,23 @@ public class TestCase {
         //
         TestCase testCase = new TestCase();
 
-        testCase.testDFA();
+        testCase.testDfaMinimize();
+    }
+
+    public void testDfaMinimize() {
+        DFA dfa = DFA.loadFromFile("dfa.txt");
+        if (dfa != null) {
+            dfa.displayDFA(System.out, "-1");
+
+            DFA minDFA = dfa.minimize();
+            minDFA.displayDFA(System.out, "-1");
+            System.out.println("始态：" + minDFA.getInitialState());
+            List<String> list = new ArrayList<>();
+            for (Integer i : minDFA.getFinalStates()) {
+                list.add(i.toString());
+            }
+            System.out.println("终态：" + String.join(",", list));
+        }
     }
 
     public void testDFA() {
