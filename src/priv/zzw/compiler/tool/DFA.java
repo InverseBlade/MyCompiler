@@ -1,14 +1,11 @@
 package priv.zzw.compiler.tool;
 
 import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.Stack;
+import java.util.*;
 
 public class DFA {
 
-    private NFA nfa = new NFA(new Symbol("ε", Symbol.V));
+    private NFA nfa = new NFA();
 
     DFA() {
 
@@ -29,12 +26,12 @@ public class DFA {
     public void setF(Integer current, String alpha, Integer target) {
         HashSet<Integer> set = new HashSet<>();
         set.add(target);
-        nfa.setF(current, new Symbol(alpha, Symbol.V), set);
+        nfa.setF(current, new Symbol(alpha, Symbol.VT), set);
     }
 
     public Integer f(Integer current, String alpha) {
         Set<Integer> target;
-        if (null == (target = nfa.f(current, new Symbol(alpha, Symbol.V)))) {
+        if (null == (target = nfa.f(current, new Symbol(alpha, Symbol.VT)))) {
             return null;
         }
         return target.iterator().next();
@@ -84,11 +81,10 @@ public class DFA {
         Set<Integer> b = new HashSet<>(getFinalStates());
         ArrayList<Set<Integer>> dist = new ArrayList<>();
         boolean sign = true;
-
+        //a为非终态
         a.removeAll(b);
         dist.add(a);
         dist.add(b);
-
         //划分等价状态
         while (sign) {
             //dist不再改变就退出
@@ -99,14 +95,15 @@ public class DFA {
                 //对上一次每一个等价划分继续划分
                 int tar0 = equiv.iterator().next();
                 Set<Integer> temp = new HashSet<>();
+                //试探每个字符
                 for (Symbol alpha : getAlphabets()) {
-                    //试探每个字符
+                    //处理一个划分中每个状态
                     for (int state : equiv) {
                         if (state == tar0)
                             continue;
                         //对一个等价划分中所有状态进行判断
-                        int s1 = f(state, alpha.getSymbol());
-                        int s2 = f(tar0, alpha.getSymbol());
+                        Integer s1 = f(state, alpha.getSymbol());
+                        Integer s2 = f(tar0, alpha.getSymbol());
                         boolean flag = false;
                         //判断s1,s2两个状态对同一字符转换后的目标状态是否满足上一次等价
                         for (Set<Integer> set : dist) {
@@ -135,6 +132,25 @@ public class DFA {
             //进入下一次迭代
             dist = nextDist;
         }
+        dist.sort(new Comparator<Set<Integer>>() {
+            @Override
+            public int compare(Set<Integer> o1, Set<Integer> o2) {
+                boolean flag = false;
+                for (int state : o1) {
+                    if (getFinalStates().contains(state)) {
+                        flag = true;
+                        break;
+                    }
+                }
+                if (flag || o2.contains(getInitialState())) {
+                    return 1;
+                } else if (!o2.contains(getInitialState())) {
+                    return -1;
+                } else {
+                    return 0;
+                }
+            }
+        });
         //添加状态
         for (int i = 1; i <= dist.size(); i++) {
             dfa.getStates().add(i);
@@ -145,7 +161,7 @@ public class DFA {
         for (int i = 0; i < dist.size(); i++) {
             for (Symbol alpha : dfa.getAlphabets()) {
                 for (int state : dist.get(i)) {
-                    int tar = f(state, alpha.getSymbol());
+                    Integer tar = f(state, alpha.getSymbol());
                     for (int j = 0; j < dist.size(); j++) {
                         if (dist.get(j).contains(tar)) {
                             tar = j + 1;
@@ -164,7 +180,7 @@ public class DFA {
                 }
             }
         }
-//        System.out.println("终态总数：" + dfa.getNfa().getInitialStates().size());
+        System.out.println("终态总数：" + dfa.getNfa().getFinalStates().size());
         for (Set<Integer> set : dist) {
             System.out.print("{");
             for (int s : set) {

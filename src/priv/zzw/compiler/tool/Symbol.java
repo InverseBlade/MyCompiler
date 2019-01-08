@@ -19,7 +19,7 @@ public class Symbol implements Comparable<Symbol> {
     public Symbol(String symbol, int type) {
         this.symbol = symbol;
         this.type = Arrays.asList(types)
-                .contains(type) ? type : V;
+                .contains(type) ? type : VT;
     }
 
     public boolean equals(Symbol symbol) {

@@ -1,6 +1,9 @@
 package priv.zzw.compiler;
 
 
+import priv.zzw.compiler.grammar.Grammar;
+import priv.zzw.compiler.grammar.Production;
+import priv.zzw.compiler.lexical.Lexical;
 import priv.zzw.compiler.tool.DFA;
 import priv.zzw.compiler.tool.NFA;
 import priv.zzw.compiler.tool.Symbol;
@@ -15,11 +18,49 @@ public class TestCase {
         //
         TestCase testCase = new TestCase();
 
-        testCase.testDfaMinimize();
+        testCase.testGrammarToDFA();
+    }
+
+    public void testGrammarToDFA() {
+        Grammar grammar = new Grammar();
+        Scanner s = new Scanner(System.in);
+        String row;
+        boolean first = true;
+
+        while (!(row = s.nextLine()).equals("end")) {
+            String[] leftAndRight = row.split("->");
+            Symbol left = new Symbol(leftAndRight[0], Symbol.VN);
+
+            if (first) {
+                grammar.setStart(left);
+                first = false;
+            }
+            for (String item : leftAndRight[1].split("[|]")) {
+                List<Symbol> right = new ArrayList<>();
+                Symbol vt = new Symbol(item.substring(0, 1), Symbol.VT);
+                right.add(vt);
+                if (item.length() > 1) {
+                    Symbol vn = new Symbol(item.substring(1, 2), Symbol.VN);
+                    right.add(vn);
+                }
+                grammar.addProduction(new Production(left, right));
+            }
+        }
+        NFA nfa = Lexical.getNfaByGrammar(grammar);
+        nfa.printNFA(System.out, "-1");
+        nfa.determine().displayDFA(System.out, "-1");
+
+        DFA dfa = nfa.determine().minimize();
+        dfa.displayDFA(System.out, "-1");
+        System.out.println("初态：" + dfa.getInitialState());
+        System.out.print("终态：");
+        for (int i : dfa.getFinalStates()) {
+            System.out.print(i + ",");
+        }
     }
 
     public void testDfaMinimize() {
-        DFA dfa = DFA.loadFromFile("dfa.txt");
+        DFA dfa = DFA.loadFromFile("nfa-to-dfa.txt");
         if (dfa != null) {
             dfa.displayDFA(System.out, "-1");
 

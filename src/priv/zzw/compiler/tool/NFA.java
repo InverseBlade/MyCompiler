@@ -27,6 +27,10 @@ public class NFA {
         this.EPSILON = epsilon;
     }
 
+    public NFA() {
+        this.EPSILON = new Symbol("ε", Symbol.VT);
+    }
+
     public Set<Integer> getStates() {
         return states;
     }
@@ -95,12 +99,12 @@ public class NFA {
             ArrayList<Symbol> symList = new ArrayList<>();
             //读ε
             String epsilon = String.valueOf((char) Integer.parseInt(bfrd.readLine()));
-            nfa = new NFA(new Symbol(epsilon, Symbol.V));
+            nfa = new NFA(new Symbol(epsilon, Symbol.VT));
             //读字符表
             row = bfrd.readLine();
             for (String val : row.split(",")) {
                 String symbolName = String.valueOf((char) Integer.parseInt(val));
-                Symbol symbol = new Symbol(symbolName, Symbol.V);
+                Symbol symbol = new Symbol(symbolName, Symbol.VT);
                 if (symList.contains(symbol)) {
                     return null;
                 }
